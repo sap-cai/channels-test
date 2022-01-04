@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta name='viewport' content='width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0'>
+  <style>
+    /* Set additional styling options for the columns*/
+    .column {
+      float: left;
+      width: 50%;
+    }
+
+    .column1 {
+      float: left;
+      width: calc(70% - 4rem);
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    .column2 {
+      float: left;
+      width: 30%;
+      height: 90vh;
+      overflow: hidden;
+      background-color: rgb(241, 234, 234);
+      border: 2px solid rgb(31, 31, 128);
+      border-radius: 0.5rem;
+    }
+    
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    h2,
+    #containerPlaceHolder {
+      color: rgb(155, 150, 150);
+    }
+
+    textarea {
+      width: 60%
+    }
+
+    section {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    fieldset {
+      width: 60%;
+      min-width: 500px
+    }
+
+    fieldset button {
+      width: 80px;
+      margin: 5px 5px;
+    }
+
+    fieldset>div {
+      margin: 3px 0px 3px 0px;
+    }
+  </style>
+  <script>
+    var taPlaceHolder =
+      "<script src='https://dhk898gvp3yro.cloudfront.net/webclient-dev/bootstrap.js' data-channel-id='a9047bad-335a-4dc0-ac5e-0d5587154727' data-token='9e7a2c4b4bd7d182dbc156cee9782839' data-expander-type='CAI' data-expander-preferences='eyJleHBhbmRlckxvZ28iOiJodHRwczovL2Nkbi5jYWkudG9vbHMuc2FwL3dlYmNoYXQvd2ViY2hhdC1sb2dvLnN2ZyIsImV4cGFuZGVyVGl0bGUiOiJDbGljayBvbiBtZSEiLCJvbmJvYXJkaW5nTWVzc2FnZSI6IkNoYXQgd2l0aCBtZSEiLCJvcGVuaW5nVHlwZSI6Im5ldmVyIiwidGhlbWUiOiJERUZBVUxUIn0=' id='cai-webclient-custom'><\/script> "
+
+
+    function test(e) {
+      e.target.disabled = true
+      var textarea = document.getElementById('codyFrom')
+      var taText = textarea.value || textarea.placeholder
+      var domParser = new DOMParser()
+      var parsedHtml = domParser.parseFromString(taText, 'text/html')
+      var script = parsedHtml.childNodes[0].childNodes[0].childNodes[0]
+
+      var newScript = document.createElement('script')
+
+
+      const isWebclient = script.src.search('bootstrap.js') > 0
+
+      if (isWebclient) {
+        newScript.src = script.src
+        Object.keys(script.dataset).map(function (key) {
+          newScript.dataset[key] = script.dataset[key]
+        })
+        document.getElementById('containerPlaceHolder').style.display = script.dataset.inplaceContainerId === 'rightContainerArea' ? 'none' : 'block'
+      } else {
+        var temp = script
+        const casedAttrName = {
+          channelid: 'channelId',
+          apiroot: 'apiRoot'
+        }
+        console.log(script)
+        if (Element.prototype.getAttributeNames == undefined) {
+          Element.prototype.getAttributeNames = function () {
+            var attributes = this.attributes;
+            var length = attributes.length;
+            var result = new Array(length);
+            for (var i = 0; i < length; i++) {
+              result[i] = attributes[i].name;
+            }
+            return result;
+          };
+        }
+        var attNames = script.getAttributeNames() 
+        script.getAttributeNames().forEach(function(item) {
+          var key = casedAttrName[item] || item
+          newScript.setAttribute(key, temp.getAttribute(key))
+        });
+        // }
+      }
+
+
+      document.head.appendChild(newScript)
+      document.getElementById('webclientApiControls').style.display = "inherit"
+      console.log(taText)
+    }
+
+    function reset() {
+      location.search = ""
+    }
+
+    function reload() {
+      var taText = document.getElementById('codyFrom').value || document.getElementById('codyFrom').placeholder
+      location.search = "?codyScript=" + btoa(taText)
+    }
+
+
+    function initTextArea() {
+      var textarea = document.getElementById('codyFrom')
+      if (location.search) {
+        var codyScript = location.search.match(/codyScript=([^&]*)/)[1]
+        if (codyScript) {
+          textarea.value = atob(codyScript)
+          var event
+
+          if (typeof Event === 'function') {
+            event = new Event('mousedown')
+          } else {
+            event = document.createEvent('Event')
+            event.initEvent('mousedown', true, true)
+          }
+          var testMeButton = document.getElementById('testMeId')
+          testMeButton.dispatchEvent(event)
+        }
+      }
+      textarea.placeholder = taPlaceHolder
+    }
+
+    window.onload = initTextArea
+  </script>
+</head>
+
+<body>
+  <div class="row">
+    <div class="column1">
+  <h1>QA test page</h1>
+  <section>
+    <p>
+      This page simulates a customer webpage by including the script as displayed below.
+    </p>
+    <ul>
+      <li>
+        If no codyScript parameter is provided, the testMe button needs to be clicked to add the bootstrap script to the
+        dom tree
+      </li>
+      <li>
+        If a codyScript parameter is provided then the testMe button is disabled and the script is automatically added
+        to the page.<br />
+        You can then either modify the script and reload or reset the page.
+      </li>
+    </ul>
+
+  </section>
+  <section>
+    <div class="">
+      <div>
+        <label for="codyForm">Paste Cody snippet here</label>
+        <div>
+          <textarea id='codyFrom' style="min-width:600px;min-height:150px"></textarea>
+
+        </div>
+        <div>
+          <button onmousedown='reset()'>Reset</button>
+          <button id="testMeId" class="active" onmousedown="test(event)">Test Me</button>
+          <button onmousedown='reload()'>Reload</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section style="display:none" id="webclientApiControls">
+    <div>
+      <h2>window.sap.cai.webclient API</h2>
+    </div>
+    <fieldset>
+
+      <div>
+        <div>
+          <button onmousedown='window.sap.cai.webclient.toggle()'>Toggle</button>
+          <code>window.sap.cai.webclient.toggle()</code>
+        </div>
+        <div>
+          <button onmousedown='window.sap.cai.webclient.show()'>Show</button>
+          <code>window.sap.cai.webclient.show()</code>
+        </div>
+        <div>
+          <button onmousedown='window.sap.cai.webclient.hide()'>Hide</button>
+          <code>window.sap.cai.webclient.hide()</code>
+        </div>
+        <div>
+          <button onmousedown='window.sap.cai.webclient.showChannels()'>Show Channels</button>
+          <code>window.sap.cai.webclient.showChannels() - For data-application-id types only</code>
+        </div>
+        <div>
+          <button onmousedown="window.sap.cai.webclient.sendMessage('Hi!')">Send Hi!</button>
+          <code>window.sap.cai.webclient.sendMessage('Hi!')</code>
+        </div>
+      </div>
+    </fieldset>
+  </section>
+    </div>
+    <div class="column2">
+      <div id='containerPlaceHolder'>
+        <center>
+          <h2>Test Container Area</h2>
+        </center>
+        <div style="margin-left: 2rem;">
+          data-inplace-container-id="rightContainerArea"
+          <br>
+          data-hide-header="false"
+        </div>
+      </div>
+      <div style="overflow:auto; margin: 1px; height: 100%; " id="rightContainerArea"></div>
+    </div>
+  </div></div>
+</body>
+</html>
